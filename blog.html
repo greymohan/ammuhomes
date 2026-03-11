@@ -250,9 +250,6 @@
 </head>
 
 <body>
-    <div id="loading-screen">
-        <div class="spinner"></div>
-    </div>
 
     <nav id="navbar">
         <a href="index.html" class="logo">
@@ -274,7 +271,7 @@
     </nav>
 
     <!-- Blog List View -->
-    <div id="blog-list-view" style="padding-top: 100px; display: none;">
+    <div id="blog-list-view" style="padding-top: 100px;">
         <section class="page-header">
             <h1>Our Stories</h1>
             <p>Insights on building, design, and Western Sydney living.</p>
@@ -345,12 +342,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
             const blogs = await fetchBlogs();
-
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => loadingScreen.style.display = 'none', 500);
-            }
 
             if (postId) {
                 renderSinglePost(blogs.find(b => b._id === postId));

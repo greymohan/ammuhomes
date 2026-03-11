@@ -351,9 +351,6 @@
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        <div class="spinner"></div>
-    </div>
 
     <nav id="navbar">
         <a href="index.html" class="logo">
@@ -374,7 +371,7 @@
         </div>
     </nav>
 
-    <div id="gallery-view" style="padding-top: 100px; display: none;">
+    <div id="gallery-view" style="padding-top: 100px;">
         <section class="page-header" style="background: var(--background-light); padding: 5rem 5%;">
             <h1>Our Projects</h1>
             <p>A showcase of our recent builds and works in progress across Western Sydney.</p>
@@ -455,11 +452,6 @@
 
         async function loadGallery() {
             allProjects = await fetchProjects();
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => loadingScreen.style.display = 'none', 500);
-            }
             const container = document.getElementById('gallery-container');
             document.getElementById('gallery-view').style.display = 'block';
             
