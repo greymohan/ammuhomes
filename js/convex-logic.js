@@ -1,7 +1,7 @@
 import { ConvexClient } from "https://esm.sh/convex@latest/browser";
 
 // Your actual Convex Deployment URL
-const CONVEX_URL = "https://brilliant-guineapig-877.convex.cloud";
+const CONVEX_URL = "https://amiable-butterfly-994.convex.cloud";
 
 const client = new ConvexClient(CONVEX_URL);
 
