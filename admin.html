@@ -273,6 +273,29 @@
             background: #d4edda;
             color: #155724;
         }
+        .btn-icon {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger-icon {
+            color: #d9534f;
+        }
+
+        .btn-danger-icon:hover {
+            background: #d9534f;
+            color: white;
+            border-color: #d43f3a;
+        }
     </style>
 </head>
 
@@ -294,6 +317,7 @@
         <header>
             <div class="logo" style="font-size: 1.5rem;">AMMU HOMES <span style="font-weight: 300; font-size: 1rem;">|
                     Admin</span></div>
+            <div id="connection-status" style="font-size: 0.8rem; color: #888;">Connecting to Convex...</div>
             <button class="btn btn-secondary" onclick="logout()">Logout</button>
         </header>
 
@@ -308,26 +332,29 @@
                 <div class="card">
                     <h3>Add New Project</h3>
                     <form id="project-form" style="margin-top: 1.5rem;">
+                        <input type="hidden" id="edit-project-id">
                         <div class="form-group">
                             <label>Project Title</label>
-                            <input type="text" placeholder="e.g. Luxury Villa, Parramatta">
+                            <input type="text" id="project-title" placeholder="e.g. Luxury Villa, Parramatta">
                         </div>
                         <div class="form-group">
                             <label>Description</label>
-                            <textarea placeholder="Describe the project details..."></textarea>
+                            <textarea id="project-description" placeholder="Describe the project details..."></textarea>
                         </div>
                         <div class="form-group">
                             <label>Status</label>
-                            <select>
+                            <select id="project-status">
                                 <option value="In Progress">In Progress</option>
                                 <option value="Completed">Completed</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Project Image</label>
-                            <input type="file" accept="image/*">
+                            <label>Project Images (Select one or more)</label>
+                            <input type="file" id="project-images" accept="image/*" multiple>
+                            <div id="existing-images-preview" style="display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap;"></div>
                         </div>
-                        <button type="button" class="btn btn-primary" style="width: 100%;">Save Project</button>
+                        <button type="button" id="save-project-btn" class="btn btn-primary" style="width: 100%;">Save Project</button>
+                        <button type="button" id="cancel-edit-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; display: none;">Cancel Edit</button>
                     </form>
                 </div>
                 <div class="card">
@@ -345,24 +372,27 @@
                 <div class="card">
                     <h3>Create Blog Post</h3>
                     <form id="blog-form" style="margin-top: 1.5rem;">
+                        <input type="hidden" id="edit-blog-id">
                         <div class="form-group">
                             <label>Blog Title</label>
-                            <input type="text" placeholder="e.g. 5 Tips for Building in Western Sydney">
+                            <input type="text" id="blog-title" placeholder="e.g. 5 Tips for Building in Western Sydney">
                         </div>
                         <div class="form-group">
                             <label>Author</label>
-                            <input type="text" value="Ammu Homes Admin">
+                            <input type="text" id="blog-author" value="Ammu Homes Admin">
                         </div>
                         <div class="form-group">
                             <label>Content</label>
-                            <textarea
+                            <textarea id="blog-content"
                                 placeholder="Write your blog content here... Support for simple formatting."></textarea>
                         </div>
                         <div class="form-group">
                             <label>Header Image</label>
-                            <input type="file" accept="image/*">
+                            <input type="file" id="blog-image" accept="image/*">
+                            <div id="existing-blog-image-preview" style="margin-top: 10px;"></div>
                         </div>
-                        <button type="button" class="btn btn-primary" style="width: 100%;">Publish Post</button>
+                        <button type="button" id="save-blog-btn" class="btn btn-primary" style="width: 100%;">Publish Post</button>
+                        <button type="button" id="cancel-blog-edit-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; display: none;">Cancel Edit</button>
                     </form>
                 </div>
                 <div class="card">
@@ -410,20 +440,32 @@
     </script>
 
     <script type="module">
-        import { addProject, addBlog, fetchProjects, fetchBlogs, uploadImage, getImageUrl } from './js/convex-logic.js';
+        import { addProject, updateProject, deleteProject, fetchProjects, addBlog, updateBlog, deleteBlog, fetchBlogs, uploadImage, getImageUrl } from './js/convex-logic.js';
+
+        let currentProjectImages = []; // Stores existing storage IDs when editing
 
         // Expose loadData to window for the checkPassword function
         window.loadData = async function() {
-            const projects = await fetchProjects();
-            const blogs = await fetchBlogs();
+            try {
+                const projects = await fetchProjects();
+                const blogs = await fetchBlogs();
 
-            renderProjects(projects);
-            renderBlogs(blogs);
+                renderProjects(projects);
+                renderBlogs(blogs);
+                
+                // Show which URL we are connected to for peace of mind
+                document.getElementById('connection-status').innerHTML = 
+                    `<i class="fas fa-check-circle" style="color: var(--success)"></i> Connected to Production`;
+            } catch (err) {
+                console.error("Load data failed:", err);
+                document.getElementById('connection-status').innerHTML = 
+                    `<i class="fas fa-exclamation-triangle" style="color: var(--danger)"></i> Connection Error`;
+            }
         }
 
         async function renderProjects(projects) {
             const list = document.getElementById('projects-list');
-            if (projects.length === 0) {
+            if (!projects || projects.length === 0) {
                 list.innerHTML = '<p style="color: #888;">No projects found. Add your first one!</p>';
                 return;
             }
@@ -433,18 +475,88 @@
                     <div class="item-info">
                         <h4>${p.title}</h4>
                         <span class="status-pill status-${p.status.toLowerCase().replace(' ', '-')}">${p.status}</span>
+                        <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">${p.imageStorageIds.length} images</div>
                     </div>
                     <div class="item-actions">
-                        <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-secondary" onclick="handleEditProject('${p._id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="handleDeleteProject('${p._id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
+        window.handleEditProject = async function(id) {
+            const projects = await fetchProjects();
+            const project = projects.find(p => p._id === id);
+            if (!project) return;
+
+            document.getElementById('edit-project-id').value = project._id;
+            document.getElementById('project-title').value = project.title;
+            document.getElementById('project-description').value = project.description;
+            document.getElementById('project-status').value = project.status;
+            
+            currentProjectImages = project.imageStorageIds || [];
+            renderExistingImages(currentProjectImages);
+
+            document.getElementById('save-project-btn').textContent = 'Update Project';
+            document.getElementById('cancel-edit-btn').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function renderExistingImages(storageIds) {
+            const preview = document.getElementById('existing-images-preview');
+            preview.innerHTML = '';
+            for (let i = 0; i < storageIds.length; i++) {
+                const id = storageIds[i];
+                const url = await getImageUrl(id);
+                const div = document.createElement('div');
+                div.style.position = 'relative';
+                div.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                        <img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                        <div style="display: flex; gap: 2px;">
+                            <button onclick="moveImage(${i}, -1)" class="btn-icon" title="Move Left"><i class="fas fa-arrow-left"></i></button>
+                            <button onclick="moveImage(${i}, 1)" class="btn-icon" title="Move Right"><i class="fas fa-arrow-right"></i></button>
+                            <button onclick="removeImage('${id}')" class="btn-icon btn-danger-icon" title="Remove"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `;
+                preview.appendChild(div);
+            }
+        }
+
+        window.moveImage = function(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= currentProjectImages.length) return;
+            
+            const temp = currentProjectImages[index];
+            currentProjectImages[index] = currentProjectImages[newIndex];
+            currentProjectImages[newIndex] = temp;
+            
+            renderExistingImages(currentProjectImages);
+        }
+
+        window.removeImage = function(id) {
+            currentProjectImages = currentProjectImages.filter(imgId => imgId !== id);
+            renderExistingImages(currentProjectImages);
+        }
+
+        document.getElementById('cancel-edit-btn').onclick = () => {
+            resetProjectForm();
+        }
+
+        function resetProjectForm() {
+            document.getElementById('project-form').reset();
+            document.getElementById('edit-project-id').value = '';
+            document.getElementById('save-project-btn').textContent = 'Save Project';
+            document.getElementById('cancel-edit-btn').style.display = 'none';
+            document.getElementById('existing-images-preview').innerHTML = '';
+            currentProjectImages = [];
+        }
+
         async function renderBlogs(blogs) {
             const list = document.getElementById('blogs-list');
-            if (blogs.length === 0) {
+            if (!blogs || blogs.length === 0) {
                 list.innerHTML = '<p style="color: #888;">No blog posts yet.</p>';
                 return;
             }
@@ -456,63 +568,137 @@
                         <span>By ${b.author} | ${new Date(b.publishedDate).toLocaleDateString()}</span>
                     </div>
                     <div class="item-actions">
-                        <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-secondary" onclick="handleEditBlog('${b._id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="handleDeleteBlog('${b._id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Form Handling
+        window.handleEditBlog = async function(id) {
+            const blogs = await fetchBlogs();
+            const blog = blogs.find(b => b._id === id);
+            if (!blog) return;
+
+            document.getElementById('edit-blog-id').value = blog._id;
+            document.getElementById('blog-title').value = blog.title;
+            document.getElementById('blog-author').value = blog.author;
+            document.getElementById('blog-content').value = blog.content;
+            
+            if (blog.imageStorageId) {
+                const url = await getImageUrl(blog.imageStorageId);
+                document.getElementById('existing-blog-image-preview').innerHTML = `<img src="${url}" style="width: 100px; height: 60px; object-fit: cover; border-radius: 4px;">`;
+            }
+
+            document.getElementById('save-blog-btn').textContent = 'Update Blog Post';
+            document.getElementById('cancel-blog-edit-btn').style.display = 'block';
+            window.scrollTo({ top: document.getElementById('blog-form').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        document.getElementById('cancel-blog-edit-btn').onclick = () => {
+            resetBlogForm();
+        }
+
+        function resetBlogForm() {
+            document.getElementById('blog-form').reset();
+            document.getElementById('edit-blog-id').value = '';
+            document.getElementById('save-blog-btn').textContent = 'Save Blog Post';
+            document.getElementById('cancel-blog-edit-btn').style.display = 'none';
+            document.getElementById('existing-blog-image-preview').innerHTML = '';
+        }
+
+        window.handleDeleteBlog = async function(id) {
+            if (confirm('Are you sure you want to delete this blog post?')) {
+                try {
+                    await deleteBlog(id);
+                    loadData();
+                } catch (err) {
+                    alert('Delete failed: ' + err.message);
+                }
+            }
+        }
+
+        // Projects Form Handling
         const projectForm = document.getElementById('project-form');
-        projectForm.querySelector('button').addEventListener('click', async () => {
-            const title = projectForm.querySelectorAll('input')[0].value;
-            const description = projectForm.querySelector('textarea').value;
-            const status = projectForm.querySelector('select').value;
-            const imageFile = projectForm.querySelectorAll('input')[1].files[0];
+        document.getElementById('save-project-btn').addEventListener('click', async () => {
+            const editId = document.getElementById('edit-project-id').value;
+            const title = document.getElementById('project-title').value;
+            const description = document.getElementById('project-description').value;
+            const status = document.getElementById('project-status').value;
+            const imageFiles = document.getElementById('project-images').files;
 
             try {
-                let imageStorageId = null;
-                if (imageFile) {
-                    imageStorageId = await uploadImage(imageFile);
+                let newStorageIds = [...currentProjectImages];
+                
+                // Upload all new images
+                if (imageFiles.length > 0) {
+                    for (const file of imageFiles) {
+                        const storageId = await uploadImage(file);
+                        if (storageId) newStorageIds.push(storageId);
+                    }
                 }
 
-                await addProject({ title, description, status, imageStorageId });
-                alert('Project saved successfully!');
-                projectForm.reset();
+                if (editId) {
+                    // Update existing
+                    await updateProject({ id: editId, title, description, status, imageStorageIds: newStorageIds });
+                    alert('Project updated successfully!');
+                } else {
+                    // Create new
+                    await addProject({ title, description, status, imageStorageIds: newStorageIds });
+                    alert('Project saved successfully!');
+                }
+                
+                resetProjectForm();
                 loadData();
             } catch (err) {
-                console.error("Failed to save project:", err);
-                alert('Error: Could not save project. Please check if your Convex backend is deployed. Error: ' + err.message);
+                console.error("Project operation failed:", err);
+                alert('Error: ' + err.message);
             }
         });
 
+        window.handleDeleteProject = async function(id) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                try {
+                    await deleteProject(id);
+                    loadData();
+                } catch (err) {
+                    alert('Delete failed: ' + err.message);
+                }
+            }
+        }
+
+
         const blogForm = document.getElementById('blog-form');
-        blogForm.querySelector('button').addEventListener('click', async () => {
-            const title = blogForm.querySelectorAll('input')[0].value;
-            const author = blogForm.querySelectorAll('input')[1].value;
-            const content = blogForm.querySelector('textarea').value;
-            const imageFile = blogForm.querySelectorAll('input')[2].files[0];
+        document.getElementById('save-blog-btn').addEventListener('click', async () => {
+            const editId = document.getElementById('edit-blog-id').value;
+            const title = document.getElementById('blog-title').value;
+            const author = document.getElementById('blog-author').value;
+            const content = document.getElementById('blog-content').value;
+            const imageFile = document.getElementById('blog-image').files[0];
 
             try {
                 let imageStorageId = null;
                 if (imageFile) {
                     imageStorageId = await uploadImage(imageFile);
+                } else if (editId) {
+                    const blogs = await fetchBlogs();
+                    const existing = blogs.find(b => b._id === editId);
+                    imageStorageId = existing ? existing.imageStorageId : null;
                 }
 
-                await addBlog({
-                    title,
-                    content,
-                    author,
-                    imageStorageId,
-                    publishedDate: Date.now()
-                });
-                alert('Blog post published!');
-                blogForm.reset();
+                if (editId) {
+                    await updateBlog({ id: editId, title, author, content, imageStorageId });
+                    alert('Blog post updated successfully!');
+                } else {
+                    await addBlog({ title, author, content, imageStorageId, publishedDate: Date.now() });
+                    alert('Blog post saved successfully!');
+                }
+                
+                resetBlogForm();
                 loadData();
             } catch (err) {
-                console.error("Failed to publish blog:", err);
-                alert('Error: Could not publish blog. Please check if your Convex backend is deployed. Error: ' + err.message);
+                console.error("Blog operation failed:", err);
+                alert('Error: ' + err.message);
             }
         });
 

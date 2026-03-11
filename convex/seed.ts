@@ -17,12 +17,14 @@ export const seedDemo = mutation({
     await ctx.db.insert("projects", {
       title: "Executive Modern Home - Penrith",
       description: "A stunning 4-bedroom executive home featuring high ceilings, open-plan living, and premium Western Sydney finishes. Built with quality and family in mind.",
+      imageStorageIds: [],
       status: "Completed",
     });
 
     await ctx.db.insert("projects", {
       title: "Luxury Hillside Villa - Blue Mountains",
       description: "A bespoke custom design that integrates perfectly with the mountain landscape. Modern architecture meets functional living.",
+      imageStorageIds: [],
       status: "In Progress",
     });
 

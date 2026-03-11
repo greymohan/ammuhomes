@@ -184,11 +184,56 @@
             margin-top: 5rem;
         }
 
-        #loading-message {
-            text-align: center;
-            grid-column: 1 / -1;
-            padding: 4rem;
-            color: #888;
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .modal-grid img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .modal-grid img:hover {
+            transform: scale(1.02);
         }
     </style>
 </head>
@@ -224,6 +269,19 @@
                 <div id="loading-message">Loading our latest work...</div>
             </div>
         </main>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modal-project-info">
+                <h2 id="modal-title" style="font-size: 2.5rem; margin-bottom: 0.5rem;"></h2>
+                <span id="modal-status" class="status-pill"></span>
+                <p id="modal-description" style="color: var(--text-gray); margin-top: 1.5rem; font-size: 1.1rem; max-width: 800px;"></p>
+            </div>
+            <div id="modal-images" class="modal-grid"></div>
+        </div>
     </div>
 
     <footer id="contact">
@@ -264,30 +322,69 @@
     <script type="module">
         import { fetchProjects, getImageUrl } from './js/convex-logic.js';
 
+        let allProjects = [];
+
         async function loadGallery() {
-            const projects = await fetchProjects();
+            allProjects = await fetchProjects();
             const container = document.getElementById('gallery-container');
             
-            if (projects.length === 0) {
+            if (allProjects.length === 0) {
                 container.innerHTML = '<div id="loading-message">No projects found. Check back soon for our latest work!</div>';
                 return;
             }
 
-            const items = await Promise.all(projects.map(async p => {
-                const imgUrl = await getImageUrl(p.imageStorageId);
+            const items = await Promise.all(allProjects.map(async p => {
+                const firstImgId = p.imageStorageIds && p.imageStorageIds.length > 0 ? p.imageStorageIds[0] : null;
+                const imgUrl = firstImgId ? await getImageUrl(firstImgId) : 'images_optimized/construction_quality.jpg';
                 return `
-                    <div class="gallery-item">
-                        <div style="width: 100%; height: 100%; background-image: url('${imgUrl || 'images_optimized/construction_quality.jpg'}'); background-size: cover; background-position: center;"></div>
+                    <div class="gallery-item" onclick="openProjectModal('${p._id}')">
+                        <div style="width: 100%; height: 100%; background-image: url('${imgUrl}'); background-size: cover; background-position: center;"></div>
                         <div class="gallery-overlay">
                             <span class="status-pill">${p.status}</span>
                             <h3>${p.title}</h3>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">${p.description}</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">${p.description.substring(0, 100)}${p.description.length > 100 ? '...' : ''}</p>
+                            <span style="font-size: 0.8rem; margin-top: 10px; display: block; opacity: 0.8;">${p.imageStorageIds ? p.imageStorageIds.length : 0} Photos</span>
                         </div>
                     </div>
                 `;
             }));
             
             container.innerHTML = items.join('');
+        }
+
+        window.openProjectModal = async function(id) {
+            const p = allProjects.find(item => item._id === id);
+            if (!p) return;
+
+            document.getElementById('modal-title').textContent = p.title;
+            document.getElementById('modal-status').textContent = p.status;
+            document.getElementById('modal-description').textContent = p.description;
+            
+            const imagesContainer = document.getElementById('modal-images');
+            imagesContainer.innerHTML = '<p>Loading images...</p>';
+            
+            document.getElementById('project-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+
+            if (p.imageStorageIds && p.imageStorageIds.length > 0) {
+                const urls = await Promise.all(p.imageStorageIds.map(id => getImageUrl(id)));
+                imagesContainer.innerHTML = urls.map(url => `<img src="${url}" onclick="window.open('${url}', '_blank')">`).join('');
+            } else {
+                imagesContainer.innerHTML = '<p style="color: #888;">No images uploaded for this project.</p>';
+            }
+        }
+
+        window.closeModal = function() {
+            document.getElementById('project-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close on clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('project-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
         }
 
         loadGallery();

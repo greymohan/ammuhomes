@@ -27,6 +27,24 @@ export async function addProject(projectData) {
     }
 }
 
+export async function updateProject(projectData) {
+    try {
+        return await client.mutation("projects:updateProject", projectData);
+    } catch (error) {
+        console.error("Error updating project:", error);
+        throw error;
+    }
+}
+
+export async function deleteProject(id) {
+    try {
+        return await client.mutation("projects:deleteProject", { id });
+    } catch (error) {
+        console.error("Error deleting project:", error);
+        throw error;
+    }
+}
+
 /**
  * BLOGS LOGIC
  */
@@ -44,6 +62,24 @@ export async function addBlog(blogData) {
         return await client.mutation("blogs:addBlog", blogData);
     } catch (error) {
         console.error("Error adding blog:", error);
+        throw error;
+    }
+}
+
+export async function updateBlog(blogData) {
+    try {
+        return await client.mutation("blogs:updateBlog", blogData);
+    } catch (error) {
+        console.error("Error updating blog:", error);
+        throw error;
+    }
+}
+
+export async function deleteBlog(id) {
+    try {
+        return await client.mutation("blogs:deleteBlog", { id });
+    } catch (error) {
+        console.error("Error deleting blog:", error);
         throw error;
     }
 }

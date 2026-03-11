@@ -5,7 +5,7 @@ export default defineSchema({
   projects: defineTable({
     title: v.string(),
     description: v.string(),
-    imageStorageId: v.optional(v.id("_storage")),
+    imageStorageIds: v.array(v.id("_storage")),
     status: v.string(), // "In Progress" or "Completed"
   }),
   blogs: defineTable({
