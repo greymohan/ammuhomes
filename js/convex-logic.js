@@ -14,7 +14,7 @@ export async function fetchProjects() {
         return await client.query("projects:getProjects");
     } catch (error) {
         console.error("Error fetching projects:", error);
-        return [];
+        throw error; // Rethrow so UI knows it failed
     }
 }
 
@@ -23,6 +23,7 @@ export async function addProject(projectData) {
         return await client.mutation("projects:addProject", projectData);
     } catch (error) {
         console.error("Error adding project:", error);
+        throw error;
     }
 }
 
@@ -34,7 +35,7 @@ export async function fetchBlogs() {
         return await client.query("blogs:getBlogs");
     } catch (error) {
         console.error("Error fetching blogs:", error);
-        return [];
+        throw error;
     }
 }
 
@@ -43,6 +44,7 @@ export async function addBlog(blogData) {
         return await client.mutation("blogs:addBlog", blogData);
     } catch (error) {
         console.error("Error adding blog:", error);
+        throw error;
     }
 }
 

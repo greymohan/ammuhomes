@@ -471,15 +471,20 @@
             const status = projectForm.querySelector('select').value;
             const imageFile = projectForm.querySelectorAll('input')[1].files[0];
 
-            let imageStorageId = null;
-            if (imageFile) {
-                imageStorageId = await uploadImage(imageFile);
-            }
+            try {
+                let imageStorageId = null;
+                if (imageFile) {
+                    imageStorageId = await uploadImage(imageFile);
+                }
 
-            await addProject({ title, description, status, imageStorageId });
-            alert('Project saved successfully!');
-            projectForm.reset();
-            loadData();
+                await addProject({ title, description, status, imageStorageId });
+                alert('Project saved successfully!');
+                projectForm.reset();
+                loadData();
+            } catch (err) {
+                console.error("Failed to save project:", err);
+                alert('Error: Could not save project. Please check if your Convex backend is deployed. Error: ' + err.message);
+            }
         });
 
         const blogForm = document.getElementById('blog-form');
@@ -489,21 +494,26 @@
             const content = blogForm.querySelector('textarea').value;
             const imageFile = blogForm.querySelectorAll('input')[2].files[0];
 
-            let imageStorageId = null;
-            if (imageFile) {
-                imageStorageId = await uploadImage(imageFile);
-            }
+            try {
+                let imageStorageId = null;
+                if (imageFile) {
+                    imageStorageId = await uploadImage(imageFile);
+                }
 
-            await addBlog({
-                title,
-                content,
-                author,
-                imageStorageId,
-                publishedDate: Date.now()
-            });
-            alert('Blog post published!');
-            blogForm.reset();
-            loadData();
+                await addBlog({
+                    title,
+                    content,
+                    author,
+                    imageStorageId,
+                    publishedDate: Date.now()
+                });
+                alert('Blog post published!');
+                blogForm.reset();
+                loadData();
+            } catch (err) {
+                console.error("Failed to publish blog:", err);
+                alert('Error: Could not publish blog. Please check if your Convex backend is deployed. Error: ' + err.message);
+            }
         });
 
         // Check auth on load
