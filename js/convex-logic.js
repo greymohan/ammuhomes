@@ -10,11 +10,21 @@ const client = new ConvexClient(CONVEX_URL);
  */
 export async function fetchProjects() {
     try {
-        // We use string-based names for queries in plain JS without generated types
-        return await client.query("projects:getProjects");
+        const cached = sessionStorage.getItem('ammu_projects');
+        if (cached) {
+            // Fetch fresh data in background
+            client.query("projects:getProjects").then(res => {
+                sessionStorage.setItem('ammu_projects', JSON.stringify(res));
+            }).catch(e => console.error(e));
+            return JSON.parse(cached);
+        }
+        
+        const data = await client.query("projects:getProjects");
+        sessionStorage.setItem('ammu_projects', JSON.stringify(data));
+        return data;
     } catch (error) {
         console.error("Error fetching projects:", error);
-        throw error; // Rethrow so UI knows it failed
+        throw error;
     }
 }
 
@@ -50,7 +60,18 @@ export async function deleteProject(id) {
  */
 export async function fetchBlogs() {
     try {
-        return await client.query("blogs:getBlogs");
+        const cached = sessionStorage.getItem('ammu_blogs');
+        if (cached) {
+            // Fetch fresh data in background
+            client.query("blogs:getBlogs").then(res => {
+                sessionStorage.setItem('ammu_blogs', JSON.stringify(res));
+            }).catch(e => console.error(e));
+            return JSON.parse(cached);
+        }
+
+        const data = await client.query("blogs:getBlogs");
+        sessionStorage.setItem('ammu_blogs', JSON.stringify(data));
+        return data;
     } catch (error) {
         console.error("Error fetching blogs:", error);
         throw error;
