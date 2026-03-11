@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ammu Homes - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0c0c0c;
+            --accent-color: #d4af37;
+            --text-light: #ffffff;
+            --text-dark: #333333;
+            --bg-gray: #f9f9f9;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Open+Sans', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Login Screen */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .login-card h2 {
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+        /* Dashboard Layout */
+        #dashboard {
+            display: none;
+            padding: 2rem 5%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            color: #777;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        /* List Items */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-info h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .item-info span {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+        }
+
+        .status-pill {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="logo" style="font-size: 1.5rem; margin-bottom: 1rem;">AMMU HOMES</div>
+            <h2>Admin Login</h2>
+            <input type="password" id="admin-password" placeholder="Enter Password">
+            <button class="btn btn-primary" onclick="checkPassword()">Login</button>
+            <p id="login-error" style="color: var(--danger); margin-top: 1rem; display: none;">Invalid Password</p>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+        <header>
+            <div class="logo" style="font-size: 1.5rem;">AMMU HOMES <span style="font-weight: 300; font-size: 1rem;">|
+                    Admin</span></div>
+            <button class="btn btn-secondary" onclick="logout()">Logout</button>
+        </header>
+
+        <div class="admin-nav">
+            <div class="nav-item active" onclick="switchSection('projects')">Projects</div>
+            <div class="nav-item" onclick="switchSection('blogs')">Blog Posts</div>
+        </div>
+
+        <!-- Projects Section -->
+        <div id="projects-section" class="section active">
+            <div class="grid">
+                <div class="card">
+                    <h3>Add New Project</h3>
+                    <form id="project-form" style="margin-top: 1.5rem;">
+                        <div class="form-group">
+                            <label>Project Title</label>
+                            <input type="text" placeholder="e.g. Luxury Villa, Parramatta">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea placeholder="Describe the project details..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Project Image</label>
+                            <input type="file" accept="image/*">
+                        </div>
+                        <button type="button" class="btn btn-primary" style="width: 100%;">Save Project</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Current Projects</h3>
+                    <div class="list-container" id="projects-list" style="margin-top: 1.5rem;">
+                        <p style="color: #888;">No projects found. Add your first one!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blogs Section -->
+        <div id="blogs-section" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h3>Create Blog Post</h3>
+                    <form id="blog-form" style="margin-top: 1.5rem;">
+                        <div class="form-group">
+                            <label>Blog Title</label>
+                            <input type="text" placeholder="e.g. 5 Tips for Building in Western Sydney">
+                        </div>
+                        <div class="form-group">
+                            <label>Author</label>
+                            <input type="text" value="Ammu Homes Admin">
+                        </div>
+                        <div class="form-group">
+                            <label>Content</label>
+                            <textarea
+                                placeholder="Write your blog content here... Support for simple formatting."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Header Image</label>
+                            <input type="file" accept="image/*">
+                        </div>
+                        <button type="button" class="btn btn-primary" style="width: 100%;">Publish Post</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3>Your Blog Posts</h3>
+                    <div class="list-container" id="blogs-list" style="margin-top: 1.5rem;">
+                        <p style="color: #888;">No blog posts yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Move checkPassword to global scope so onclick works even if module fails
+        window.checkPassword = function () {
+            const pass = document.getElementById('admin-password').value;
+            if (pass === 'ammuhomes2026') {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                localStorage.setItem('adminAuthenticated', 'true');
+                
+                // If module failed to load, show a warning
+                if (typeof window.loadData !== 'function') {
+                    alert('Note: The dashboard logic requires a local server. Please run "npx serve ." as described in CONVEX_SETUP.md');
+                } else {
+                    window.loadData();
+                }
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        window.logout = function () {
+            localStorage.removeItem('adminAuthenticated');
+            location.reload();
+        }
+
+        window.switchSection = function (section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(section + '-section').classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+
+    <script type="module">
+        import { addProject, addBlog, fetchProjects, fetchBlogs, uploadImage, getImageUrl } from './js/convex-logic.js';
+
+        // Expose loadData to window for the checkPassword function
+        window.loadData = async function() {
+            const projects = await fetchProjects();
+            const blogs = await fetchBlogs();
+
+            renderProjects(projects);
+            renderBlogs(blogs);
+        }
+
+        async function renderProjects(projects) {
+            const list = document.getElementById('projects-list');
+            if (projects.length === 0) {
+                list.innerHTML = '<p style="color: #888;">No projects found. Add your first one!</p>';
+                return;
+            }
+
+            list.innerHTML = projects.map(p => `
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>${p.title}</h4>
+                        <span class="status-pill status-${p.status.toLowerCase().replace(' ', '-')}">${p.status}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function renderBlogs(blogs) {
+            const list = document.getElementById('blogs-list');
+            if (blogs.length === 0) {
+                list.innerHTML = '<p style="color: #888;">No blog posts yet.</p>';
+                return;
+            }
+
+            list.innerHTML = blogs.map(b => `
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>${b.title}</h4>
+                        <span>By ${b.author} | ${new Date(b.publishedDate).toLocaleDateString()}</span>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Form Handling
+        const projectForm = document.getElementById('project-form');
+        projectForm.querySelector('button').addEventListener('click', async () => {
+            const title = projectForm.querySelectorAll('input')[0].value;
+            const description = projectForm.querySelector('textarea').value;
+            const status = projectForm.querySelector('select').value;
+            const imageFile = projectForm.querySelectorAll('input')[1].files[0];
+
+            let imageStorageId = null;
+            if (imageFile) {
+                imageStorageId = await uploadImage(imageFile);
+            }
+
+            await addProject({ title, description, status, imageStorageId });
+            alert('Project saved successfully!');
+            projectForm.reset();
+            loadData();
+        });
+
+        const blogForm = document.getElementById('blog-form');
+        blogForm.querySelector('button').addEventListener('click', async () => {
+            const title = blogForm.querySelectorAll('input')[0].value;
+            const author = blogForm.querySelectorAll('input')[1].value;
+            const content = blogForm.querySelector('textarea').value;
+            const imageFile = blogForm.querySelectorAll('input')[2].files[0];
+
+            let imageStorageId = null;
+            if (imageFile) {
+                imageStorageId = await uploadImage(imageFile);
+            }
+
+            await addBlog({
+                title,
+                content,
+                author,
+                imageStorageId,
+                publishedDate: Date.now()
+            });
+            alert('Blog post published!');
+            blogForm.reset();
+            loadData();
+        });
+
+        // Check auth on load
+        if (localStorage.getItem('adminAuthenticated') === 'true') {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadData();
+        }
+    </script>
+</body>
+
+</html>
