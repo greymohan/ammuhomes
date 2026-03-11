@@ -621,23 +621,32 @@
         // Projects Form Handling
         const projectForm = document.getElementById('project-form');
         document.getElementById('save-project-btn').addEventListener('click', async () => {
+            const saveBtn = document.getElementById('save-project-btn');
             const editId = document.getElementById('edit-project-id').value;
             const title = document.getElementById('project-title').value;
             const description = document.getElementById('project-description').value;
             const status = document.getElementById('project-status').value;
             const imageFiles = document.getElementById('project-images').files;
 
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+
             try {
+                saveBtn.disabled = true;
                 let newStorageIds = [...currentProjectImages];
                 
                 // Upload all new images
                 if (imageFiles.length > 0) {
-                    for (const file of imageFiles) {
-                        const storageId = await uploadImage(file);
+                    for (let i = 0; i < imageFiles.length; i++) {
+                        saveBtn.textContent = `Optimizing & Uploading ${i+1}/${imageFiles.length}...`;
+                        const storageId = await uploadImage(imageFiles[i]);
                         if (storageId) newStorageIds.push(storageId);
                     }
                 }
 
+                saveBtn.textContent = 'Saving Project...';
                 if (editId) {
                     // Update existing
                     await updateProject({ id: editId, title, description, status, imageStorageIds: newStorageIds });
@@ -653,6 +662,9 @@
             } catch (err) {
                 console.error("Project operation failed:", err);
                 alert('Error: ' + err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = editId ? 'Update Project' : 'Save Project';
             }
         });
 

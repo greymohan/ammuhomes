@@ -216,24 +216,109 @@
             color: var(--primary-color);
         }
 
+        .modal-grid img:hover {
+            transform: scale(1.02);
+        }
+
+        /* Small thumbnails in modal */
         .modal-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
             margin-top: 2rem;
         }
 
         .modal-grid img {
             width: 100%;
-            height: 250px;
+            height: 120px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
 
         .modal-grid img:hover {
-            transform: scale(1.02);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        /* Fullscreen Lightbox Slider */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 85vh;
+            position: relative;
+        }
+
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 85vh;
+            display: block;
+            margin: 0 auto;
+            border-radius: 4px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            border: none;
+            transition: all 0.3s;
+            border-radius: 4px;
+            z-index: 3010;
+        }
+
+        .slider-nav:hover {
+            background: rgba(255,255,255,0.2);
+            color: var(--accent-color);
+        }
+
+        .slider-prev { left: -80px; }
+        .slider-next { right: -80px; }
+
+        .slider-counter {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .slider-prev { left: 10px; background: rgba(0,0,0,0.5); }
+            .slider-next { right: 10px; background: rgba(0,0,0,0.5); }
         }
 
         #loading-screen {
@@ -315,6 +400,17 @@
         </div>
     </div>
 
+    <!-- Lightbox Slider -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+            <button class="slider-nav slider-prev" onclick="prevSlide()">&larr;</button>
+            <button class="slider-nav slider-next" onclick="nextSlide()">&rarr;</button>
+            <img id="lightbox-img" class="lightbox-img" src="" alt="Full view">
+            <div id="slider-counter" class="slider-counter"></div>
+        </div>
+    </div>
+
     <footer id="contact">
         <div class="footer-content" style="display: flex; flex-wrap: wrap; gap: 3rem; justify-content: space-between; max-width: 1400px; margin: 0 auto;">
             <div class="footer-section" style="flex: 1; min-width: 250px;">
@@ -354,6 +450,8 @@
         import { fetchProjects, getImageUrl } from './js/convex-logic.js';
 
         let allProjects = [];
+        let currentLightboxImages = [];
+        let currentSlideIndex = 0;
 
         async function loadGallery() {
             allProjects = await fetchProjects();
@@ -405,10 +503,48 @@
 
             if (p.imageStorageIds && p.imageStorageIds.length > 0) {
                 const urls = await Promise.all(p.imageStorageIds.map(id => getImageUrl(id)));
-                imagesContainer.innerHTML = urls.map(url => `<img src="${url}" onclick="window.open('${url}', '_blank')">`).join('');
+                currentLightboxImages = urls; // Store for lightbox
+                imagesContainer.innerHTML = urls.map((url, index) => 
+                    `<img src="${url}" onclick="openLightbox(${index})" alt="Project photo ${index + 1}">`
+                ).join('');
             } else {
                 imagesContainer.innerHTML = '<p style="color: #888;">No images uploaded for this project.</p>';
+                currentLightboxImages = [];
             }
+        }
+
+        window.openLightbox = function(index) {
+            currentSlideIndex = index;
+            updateLightboxImage();
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        window.closeLightbox = function() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        window.nextSlide = function() {
+            if (currentLightboxImages.length === 0) return;
+            currentSlideIndex = (currentSlideIndex + 1) % currentLightboxImages.length;
+            updateLightboxImage();
+        }
+
+        window.prevSlide = function() {
+            if (currentLightboxImages.length === 0) return;
+            currentSlideIndex = (currentSlideIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
+            updateLightboxImage();
+        }
+
+        function updateLightboxImage() {
+            const img = document.getElementById('lightbox-img');
+            const counter = document.getElementById('slider-counter');
+            
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.src = currentLightboxImages[currentSlideIndex];
+                img.onload = () => img.style.opacity = '1';
+                counter.textContent = `Image ${currentSlideIndex + 1} of ${currentLightboxImages.length}`;
+            }, 50);
         }
 
         window.closeModal = function() {
@@ -419,10 +555,24 @@
         // Close on clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('project-modal');
+            const lightbox = document.getElementById('lightbox');
             if (event.target == modal) {
                 closeModal();
+            } else if (event.target == lightbox) {
+                closeLightbox();
             }
         }
+
+        // Keyboard support
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('lightbox').style.display === 'flex') {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === 'Escape') closeLightbox();
+            } else if (document.getElementById('project-modal').style.display === 'block') {
+                if (e.key === 'Escape') closeModal();
+            }
+        });
 
         loadGallery();
     </script>
