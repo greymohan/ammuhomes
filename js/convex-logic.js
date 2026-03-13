@@ -18,7 +18,7 @@ export async function fetchProjects() {
             }).catch(e => console.error(e));
             return JSON.parse(cached);
         }
-        
+
         const data = await client.query("projects:getProjects");
         sessionStorage.setItem('ammu_projects', JSON.stringify(data));
         return data;

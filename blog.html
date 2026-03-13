@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ammu Homes - Blog</title>
+    <title>Ammubuilders | Blog</title>
+    <link rel="icon" type="image/png" href="images_optimized/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -25,6 +26,10 @@
             --background-light: #f8f8f8;
         }
 
+        .mobile-only {
+            display: none;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             line-height: 1.6;
@@ -34,7 +39,7 @@
         }
 
         /* Navigation */
-        nav {
+        nav#navbar {
             position: fixed;
             top: 0;
             left: 0;
@@ -48,6 +53,7 @@
             align-items: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            height: auto;
         }
 
         .logo {
@@ -106,6 +112,8 @@
             margin: 3px 0;
             transition: 0.3s;
         }
+
+
 
         /* Hero */
         .page-header {
@@ -227,9 +235,78 @@
         }
 
         .post-container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 4rem 5%;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .post-pagination {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid #eee;
+            gap: 1.5rem;
+        }
+
+        .pagination-link {
+            flex: 1;
+            text-decoration: none;
+            color: var(--text-dark);
+            padding: 1.2rem;
+            border-radius: 12px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+            max-width: 48%;
+            border: 1px solid #f0f0f0;
+        }
+
+        .pagination-link:hover {
+            background: #ffffff;
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .pagination-link span {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+        }
+
+        .pagination-link h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pagination-link.next {
+            text-align: right;
         }
 
         .post-header {
@@ -304,6 +381,60 @@
             100% { transform: rotate(360deg); }
         }
 
+        @media (max-width: 768px) {
+            .contact-btn {
+                display: none;
+            }
+
+            .mobile-only {
+                display: block;
+            }
+
+            .page-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .post-header h1 {
+                font-size: 2rem;
+            }
+
+            .post-container {
+                padding: 2rem 5%;
+            }
+
+            .post-img {
+                height: 300px;
+                margin-bottom: 2rem;
+            }
+
+            .post-pagination {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pagination-link {
+                max-width: 100%;
+            }
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                flex-direction: column;
+                background: white;
+                width: 100%;
+                padding: 2rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                transition: left 0.3s ease;
+                z-index: 1001;
+            }
+            .nav-links.active {
+                left: 0;
+            }
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
         footer {
             background: var(--primary-color);
             color: white;
@@ -326,6 +457,7 @@
             <li><a href="index.html#about">About</a></li>
             <li><a href="gallery.html">Gallery</a></li>
             <li><a href="blog.html" style="color: var(--accent-color);">Blog</a></li>
+            <li class="mobile-only"><a href="index.html#contact">Contact</a></li>
         </ul>
         <a href="index.html#contact" class="contact-btn">Contact</a>
         <div class="menu-toggle" onclick="toggleMenu()">
@@ -336,10 +468,10 @@
     </nav>
 
     <!-- Blog List View -->
-    <div id="blog-list-view" style="padding-top: 100px;">
+    <div id="blog-list-view" style="padding-top: 140px;">
         <section class="page-header">
             <h1>The Ammu Homes Blog</h1>
-            <p>Insights on building, design, and Western Sydney living.</p>
+            <p>Insights on building and design.</p>
         </section>
 
         <main class="container">
@@ -350,8 +482,9 @@
     </div>
 
     <!-- Single Blog View -->
-    <div id="single-post" style="padding-top: 100px; display: none;">
+    <div id="single-post" style="padding-top: 140px; display: none;">
         <div class="post-container">
+            <a href="blog.html" class="back-btn" id="post-back-btn">← Back to Stories</a>
             <article>
                 <header class="post-header">
                     <h1 id="post-title">Post Title</h1>
@@ -362,6 +495,17 @@
                     <!-- Dynamic Content -->
                 </div>
             </article>
+            
+            <div class="post-pagination">
+                <a href="#" class="pagination-link prev" id="prev-post">
+                    <span>Previous Story</span>
+                    <h4 id="prev-post-title">Previous Title</h4>
+                </a>
+                <a href="#" class="pagination-link next" id="next-post">
+                    <span>Next Story</span>
+                    <h4 id="next-post-title">Next Title</h4>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -369,19 +513,19 @@
         <div class="footer-content" style="display: flex; flex-wrap: wrap; gap: 3rem; justify-content: space-between; max-width: 1400px; margin: 0 auto;">
             <div class="footer-section" style="flex: 1; min-width: 250px;">
                 <img src="images_optimized/logo.png" alt="Ammu Homes" style="height: 60px; margin-bottom: 1.5rem;">
-                <p style="font-size: 0.9rem; color: #ccc;">Building quality Ammu homes across Western Sydney. With 7+ years of industry experience working alongside leading builders, we now bring that expertise directly to you.</p>
+                <p style="font-size: 0.9rem; color: #ccc;">Building quality Ammu homes. With 7+ years of industry experience working alongside leading builders, we now bring that expertise directly to you.</p>
             </div>
             <div class="footer-section" style="flex: 1; min-width: 200px;">
                 <h3 style="margin-bottom: 1.5rem; color: var(--accent-color);">Contact</h3>
                 <ul style="list-style: none; font-size: 0.9rem; color: #ccc;">
                     <li style="margin-bottom: 0.5rem;">Phone: 0491 116 890</li>
                     <li style="margin-bottom: 0.5rem;">Email: info@ammubuilders.com.au</li>
-                    <li>Location: Western Sydney</li>
+
                 </ul>
             </div>
         </div>
         <div class="footer-bottom" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; color: #888;">
-            <p>&copy; 2026 Ammu Homes Western Sydney. All rights reserved.</p>
+            <p>&copy; 2026 Ammu Homes. All rights reserved.</p>
         </div>
     </footer>
 
@@ -409,7 +553,7 @@
             const blogs = await fetchBlogs();
 
             if (postId) {
-                renderSinglePost(blogs.find(b => b._id === postId));
+                renderSinglePost(blogs.find(b => b._id === postId), blogs);
             } else {
                 renderBlogList(blogs);
             }
@@ -443,7 +587,7 @@
             container.innerHTML = cards.join('');
         }
 
-        async function renderSinglePost(post) {
+        async function renderSinglePost(post, allPosts) {
             if (!post) {
                 window.location.href = 'blog.html';
                 return;
@@ -459,6 +603,7 @@
             const heroImg = document.getElementById('post-hero-img');
             if (imgUrl) {
                 heroImg.style.backgroundImage = `url('${imgUrl}')`;
+                heroImg.style.display = 'block';
             } else {
                 heroImg.style.display = 'none';
             }
@@ -470,7 +615,31 @@
                 .map(p => `<p>${p}</p>`)
                 .join('');
 
+            // Pagination Logic
+            const currentIndex = allPosts.findIndex(b => b._id === post._id);
+            const prevLink = document.getElementById('prev-post');
+            const nextLink = document.getElementById('next-post');
+
+            if (currentIndex > 0) {
+                const prev = allPosts[currentIndex - 1];
+                prevLink.href = `?id=${prev._id}`;
+                document.getElementById('prev-post-title').textContent = prev.title;
+                prevLink.style.visibility = 'visible';
+            } else {
+                prevLink.style.visibility = 'hidden';
+            }
+
+            if (currentIndex < allPosts.length - 1) {
+                const next = allPosts[currentIndex + 1];
+                nextLink.href = `?id=${next._id}`;
+                document.getElementById('next-post-title').textContent = next.title;
+                nextLink.style.visibility = 'visible';
+            } else {
+                nextLink.style.visibility = 'hidden';
+            }
+
             document.title = `Ammu Homes - ${post.title}`;
+            window.scrollTo(0, 0); // Scroll to top when loading new post
         }
 
         window.addEventListener('popstate', init);

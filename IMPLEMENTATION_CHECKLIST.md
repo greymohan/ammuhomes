@@ -434,7 +434,7 @@ Replace these images first as you complete projects:
 - [ ] Read: Google My Business optimization guide
 - [ ] Completed: Instagram for Business tutorial
 - [ ] Learned: Basic photo editing (Canva)
-- [ ] Studied: Competitor websites in Western Sydney
+- [ ] Studied: Competitor websites in the local area
 
 ### Skills to Develop
 - [ ] Basic photo editing
