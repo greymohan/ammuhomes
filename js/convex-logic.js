@@ -5,22 +5,33 @@ const CONVEX_URL = "https://amiable-butterfly-994.convex.cloud";
 
 const client = new ConvexClient(CONVEX_URL);
 
+const PROJECTS_CACHE_KEY = 'ammu_projects';
+const BLOGS_CACHE_KEY = 'ammu_blogs';
+
+function invalidateProjectsCache() {
+    sessionStorage.removeItem(PROJECTS_CACHE_KEY);
+}
+
+function invalidateBlogsCache() {
+    sessionStorage.removeItem(BLOGS_CACHE_KEY);
+}
+
 /**
  * PROJECTS LOGIC
  */
 export async function fetchProjects() {
     try {
-        const cached = sessionStorage.getItem('ammu_projects');
+        const cached = sessionStorage.getItem(PROJECTS_CACHE_KEY);
         if (cached) {
             // Fetch fresh data in background
             client.query("projects:getProjects").then(res => {
-                sessionStorage.setItem('ammu_projects', JSON.stringify(res));
+                sessionStorage.setItem(PROJECTS_CACHE_KEY, JSON.stringify(res));
             }).catch(e => console.error(e));
             return JSON.parse(cached);
         }
 
         const data = await client.query("projects:getProjects");
-        sessionStorage.setItem('ammu_projects', JSON.stringify(data));
+        sessionStorage.setItem(PROJECTS_CACHE_KEY, JSON.stringify(data));
         return data;
     } catch (error) {
         console.error("Error fetching projects:", error);
@@ -30,7 +41,9 @@ export async function fetchProjects() {
 
 export async function addProject(projectData) {
     try {
-        return await client.mutation("projects:addProject", projectData);
+        const res = await client.mutation("projects:addProject", projectData);
+        invalidateProjectsCache();
+        return res;
     } catch (error) {
         console.error("Error adding project:", error);
         throw error;
@@ -39,7 +52,9 @@ export async function addProject(projectData) {
 
 export async function updateProject(projectData) {
     try {
-        return await client.mutation("projects:updateProject", projectData);
+        const res = await client.mutation("projects:updateProject", projectData);
+        invalidateProjectsCache();
+        return res;
     } catch (error) {
         console.error("Error updating project:", error);
         throw error;
@@ -48,7 +63,9 @@ export async function updateProject(projectData) {
 
 export async function deleteProject(id) {
     try {
-        return await client.mutation("projects:deleteProject", { id });
+        const res = await client.mutation("projects:deleteProject", { id });
+        invalidateProjectsCache();
+        return res;
     } catch (error) {
         console.error("Error deleting project:", error);
         throw error;
@@ -60,17 +77,17 @@ export async function deleteProject(id) {
  */
 export async function fetchBlogs() {
     try {
-        const cached = sessionStorage.getItem('ammu_blogs');
+        const cached = sessionStorage.getItem(BLOGS_CACHE_KEY);
         if (cached) {
             // Fetch fresh data in background
             client.query("blogs:getBlogs").then(res => {
-                sessionStorage.setItem('ammu_blogs', JSON.stringify(res));
+                sessionStorage.setItem(BLOGS_CACHE_KEY, JSON.stringify(res));
             }).catch(e => console.error(e));
             return JSON.parse(cached);
         }
 
         const data = await client.query("blogs:getBlogs");
-        sessionStorage.setItem('ammu_blogs', JSON.stringify(data));
+        sessionStorage.setItem(BLOGS_CACHE_KEY, JSON.stringify(data));
         return data;
     } catch (error) {
         console.error("Error fetching blogs:", error);
@@ -80,7 +97,9 @@ export async function fetchBlogs() {
 
 export async function addBlog(blogData) {
     try {
-        return await client.mutation("blogs:addBlog", blogData);
+        const res = await client.mutation("blogs:addBlog", blogData);
+        invalidateBlogsCache();
+        return res;
     } catch (error) {
         console.error("Error adding blog:", error);
         throw error;
@@ -89,7 +108,9 @@ export async function addBlog(blogData) {
 
 export async function updateBlog(blogData) {
     try {
-        return await client.mutation("blogs:updateBlog", blogData);
+        const res = await client.mutation("blogs:updateBlog", blogData);
+        invalidateBlogsCache();
+        return res;
     } catch (error) {
         console.error("Error updating blog:", error);
         throw error;
@@ -98,7 +119,9 @@ export async function updateBlog(blogData) {
 
 export async function deleteBlog(id) {
     try {
-        return await client.mutation("blogs:deleteBlog", { id });
+        const res = await client.mutation("blogs:deleteBlog", { id });
+        invalidateBlogsCache();
+        return res;
     } catch (error) {
         console.error("Error deleting blog:", error);
         throw error;
